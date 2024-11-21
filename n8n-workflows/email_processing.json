@@ -1,0 +1,38 @@
+{
+    "name": "Email Processing Workflow",
+    "nodes": [
+        {
+            "parameters": {
+                "authentication": "basicAuth",
+                "username": "={{ $env.N8N_BASIC_AUTH_USER }}",
+                "password": "={{ $env.N8N_BASIC_AUTH_PASSWORD }}"
+            },
+            "name": "Email Trigger",
+            "type": "n8n-nodes-base.emailTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://backend:8000/api/email-assistant/process-email/",
+                "authentication": "basicAuth",
+                "sendBody": true,
+                "bodyParameters": {
+                    "email_content": "={{ $node.Email Trigger.data.text }}",
+                    "subject": "={{ $node.Email Trigger.data.subject }}",
+                    "from": "={{ $node.Email Trigger.data.from }}"
+                }
+            },
+            "name": "Process Email",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                450,
+                300
+            ]
+        }
+    ]
+} 
