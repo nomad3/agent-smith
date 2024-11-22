@@ -19,6 +19,24 @@ A scalable platform for deploying AI-powered business automation agents using Op
 - Improvement suggestions
 - Sentiment analysis
 
+### DevOps Agent
+- Real-time infrastructure health monitoring
+- Multi-cloud provider support (AWS, GCP, Azure, Digital Ocean)
+- Automated error detection and ticketing
+- Infrastructure optimization recommendations
+- Prometheus metrics integration
+- Trace management system:
+  - Automatic error trace collection
+  - 10% sampling of successful operations
+  - Webhook integration for ticket creation
+  - Historical trace analysis
+  - Quality assurance through trace datasets
+- Usage tracking and cost analysis:
+  - Per-feature cost breakdown
+  - Token usage monitoring
+  - Customizable time ranges (24h, 7d, 30d)
+  - Organization-level statistics
+
 ## 🏗 Architecture
 
 ### Tech Stack

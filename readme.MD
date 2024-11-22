@@ -18,6 +18,24 @@ Una plataforma escalable para implementar agentes de automatización impulsados 
 - Sugerencias de mejora
 - Análisis de sentimiento
 
+### Agente DevOps
+- Monitoreo de salud de infraestructura en tiempo real
+- Soporte multi-cloud (AWS, GCP, Azure, Digital Ocean)
+- Detección automática de errores y creación de tickets
+- Recomendaciones de optimización de infraestructura
+- Integración con métricas de Prometheus
+- Sistema de gestión de trazas:
+  - Recolección automática de trazas de error
+  - Muestreo del 10% de operaciones exitosas
+  - Integración con webhook para tickets
+  - Análisis histórico de trazas
+  - Control de calidad mediante conjuntos de datos de trazas
+- Seguimiento de uso y análisis de costos:
+  - Desglose de costos por funcionalidad
+  - Monitoreo de uso de tokens
+  - Rangos de tiempo personalizables (24h, 7d, 30d)
+  - Estadísticas a nivel de organización
+
 ## 🏗 Arquitectura
 
 ### Stack Tecnológico
