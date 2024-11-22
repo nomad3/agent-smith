@@ -21,8 +21,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'core',
-    'agents',
-    'api',
 ]
 
 MIDDLEWARE = [
@@ -63,4 +61,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# DevOps settings
+DEVOPS_SETTINGS = {
+    'prometheus_url': os.getenv('PROMETHEUS_URL'),
+    'alert_thresholds': {
+        'cpu_utilization': 80,
+        'memory_utilization': 85,
+        'disk_usage': 90
+    }
+} 

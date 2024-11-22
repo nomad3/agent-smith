@@ -17,13 +17,16 @@
         },
         {
             "parameters": {
-                "url": "http://backend:8000/api/email-assistant/process-email/",
-                "authentication": "basicAuth",
+                "url": "http://backend:8000/api/agent/process_email/",
+                "authentication": "headerAuth",
+                "headerParameters": {
+                    "Authorization": "Bearer ={{ $env.API_TOKEN }}"
+                },
                 "sendBody": true,
                 "bodyParameters": {
                     "email_content": "={{ $node.Email Trigger.data.text }}",
                     "subject": "={{ $node.Email Trigger.data.subject }}",
-                    "from": "={{ $node.Email Trigger.data.from }}"
+                    "sender_email": "={{ $node.Email Trigger.data.from }}"
                 }
             },
             "name": "Process Email",
