@@ -1,4 +1,3 @@
-```markdown:README.md
 # Plataforma de Agentes de IA para Negocios
 
 Una plataforma escalable para implementar agentes de automatización impulsados por IA utilizando OpenAI, Django y n8n. Esta solución proporciona agentes de IA rentables para pequeñas y medianas empresas.
