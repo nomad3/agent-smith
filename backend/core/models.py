@@ -158,3 +158,31 @@ class SocialMessage(models.Model):
     content = models.TextField()
     intent = models.JSONField(null=True)
     sentiment = models.FloatField(null=True)
+
+class Trace(models.Model):
+    TRACE_STATUS = [
+        ('error', 'Error'),
+        ('success', 'Success'),
+    ]
+
+    resource = models.ForeignKey(CloudResource, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=TRACE_STATUS)
+    content = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed = models.BooleanField(default=False)
+    ticket_id = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+        ]
+
+class TraceDataset(models.Model):
+    DATASET_TYPE = [
+        ('error', 'Error Traces'),
+        ('evaluation', 'Evaluation Traces'),
+    ]
+
+    type = models.CharField(max_length=20, choices=DATASET_TYPE)
+    traces = models.ManyToManyField(Trace)
+    created_at = models.DateTimeField(auto_now_add=True)

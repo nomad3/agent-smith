@@ -5,6 +5,9 @@ import pandas as pd
 from datetime import datetime
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 import json
+import random
+import requests
+from django.db import models
 
 class EmailResponse(BaseModel):
     classification: Dict
@@ -25,12 +28,13 @@ class MessageAnalysis(BaseModel):
     updated_context: Dict
 
 class AIAgent:
-    def __init__(self, api_key: str, prometheus_url: str = None):
+    def __init__(self, api_key: str, prometheus_url: str = None, webhook_url: str = None):
         self.client = openai.OpenAI(api_key=api_key)
         self.registry = CollectorRegistry()
         self.health_gauge = Gauge('resource_health', 'Resource Health Score', 
                                 ['resource_id'], registry=self.registry)
         self.prometheus_url = prometheus_url
+        self.webhook_url = webhook_url
 
     def process_email(self, content: str, org_name: str) -> EmailResponse:
         classification = self._classify_email(content)
@@ -42,6 +46,49 @@ class AIAgent:
         # Reference existing DevOpsAgent implementation
         startLine: 23
         endLine: 41
+
+    def process_trace(self, trace_data: dict, resource: CloudResource) -> None:
+        # Create trace record
+        trace = Trace.objects.create(
+            resource=resource,
+            status='error' if trace_data.get('error') else 'success',
+            content=trace_data
+        )
+
+        # Handle error traces
+        if trace.status == 'error':
+            self._add_to_error_dataset(trace)
+            self._create_ticket(trace)
+        # Handle successful traces (10% sample)
+        elif random.random() < 0.1:
+            self._add_to_evaluation_dataset(trace)
+
+    def _add_to_error_dataset(self, trace: Trace) -> None:
+        dataset, _ = TraceDataset.objects.get_or_create(
+            type='error',
+            defaults={'created_at': datetime.now()}
+        )
+        dataset.traces.add(trace)
+
+    def _add_to_evaluation_dataset(self, trace: Trace) -> None:
+        dataset, _ = TraceDataset.objects.get_or_create(
+            type='evaluation',
+            defaults={'created_at': datetime.now()}
+        )
+        dataset.traces.add(trace)
+
+    def _create_ticket(self, trace: Trace) -> None:
+        if self.webhook_url:
+            payload = {
+                'title': f'Error Trace - Resource {trace.resource.identifier}',
+                'description': json.dumps(trace.content, indent=2),
+                'priority': 'high',
+                'type': 'error_trace'
+            }
+            response = requests.post(self.webhook_url, json=payload)
+            if response.ok:
+                trace.ticket_id = response.json().get('ticket_id')
+                trace.save()
 
     def _classify_email(self, content: str) -> Dict:
         response = self.client.chat.completions.create(

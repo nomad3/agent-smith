@@ -9,6 +9,9 @@ Un asistente DevOps potenciado por IA que monitorea, analiza y proporciona recom
 - Detección automatizada de problemas en múltiples proveedores cloud
 - Recomendaciones impulsadas por IA para optimización de infraestructura 
 - Integración con métricas de Prometheus para monitoreo continuo
+- Recolección y análisis automático de trazas de error
+- Creación inteligente de tickets para problemas críticos
+- Control de calidad mediante muestreo aleatorio de operaciones exitosas
 
 ### Desarrollos Futuros
 - Integración con Grafana para visualización de métricas en tiempo real
