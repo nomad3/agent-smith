@@ -71,4 +71,38 @@ DEVOPS_SETTINGS = {
         'memory_utilization': 85,
         'disk_usage': 90
     }
-} 
+}
+
+# Social Media Settings
+SOCIAL_SETTINGS = {
+    'meta': {
+        'app_id': os.getenv('META_APP_ID'),
+        'app_secret': os.getenv('META_APP_SECRET'),
+        'verify_token': os.getenv('META_VERIFY_TOKEN'),
+    },
+    'whatsapp': {
+        'api_key': os.getenv('WHATSAPP_API_KEY'),
+        'phone_number_id': os.getenv('WHATSAPP_PHONE_NUMBER_ID'),
+    }
+}
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+# Admin settings
+ADMIN_SITE_HEADER = "AI Business Agents Admin"
+ADMIN_SITE_TITLE = "AI Business Agents Portal"
+ADMIN_INDEX_TITLE = "Welcome to AI Business Agents Admin Portal" 

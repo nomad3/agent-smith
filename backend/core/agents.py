@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import pandas as pd
 from datetime import datetime
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
+import json
 
 class EmailResponse(BaseModel):
     classification: Dict
@@ -14,6 +15,14 @@ class ResourceHealth(BaseModel):
     health_score: float
     issues: List[str]
     recommendations: List[str]
+
+class MessageAnalysis(BaseModel):
+    intent: Dict
+    sentiment: float
+    suggested_response: str
+    lead_score_delta: float
+    suggested_stage: str
+    updated_context: Dict
 
 class AIAgent:
     def __init__(self, api_key: str, prometheus_url: str = None):
@@ -52,4 +61,114 @@ class AIAgent:
                 {"role": "user", "content": content}
             ]
         )
-        return response.choices[0].message.content 
+        return response.choices[0].message.content
+
+    def process_social_message(self, 
+                             message_content: str,
+                             conversation_history: List[Dict],
+                             current_stage: str,
+                             context_data: Dict) -> MessageAnalysis:
+        
+        prompt = self._create_social_prompt(
+            message_content, 
+            conversation_history,
+            current_stage,
+            context_data
+        )
+        
+        response = self.client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert sales assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        # Actualizar contexto basado en el nuevo mensaje
+        updated_context = self._update_context(
+            message_content,
+            context_data,
+            response.choices[0].message.content
+        )
+        
+        analysis = self._parse_social_analysis(response.choices[0].message.content)
+        analysis.updated_context = updated_context
+        
+        return analysis
+
+    def _update_context(self, message: str, current_context: Dict, ai_response: str) -> Dict:
+        context_prompt = f"""
+        Based on this message and current context, update the context information:
+        
+        Message: {message}
+        Current Context: {json.dumps(current_context, indent=2)}
+        AI Response: {ai_response}
+        
+        Extract and update:
+        1. Customer preferences
+        2. Key discussion points
+        3. Important dates/numbers mentioned
+        4. Action items
+        5. Relevant tags
+        
+        Return as JSON.
+        """
+        
+        response = self.client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You update conversation context."},
+                {"role": "user", "content": context_prompt}
+            ]
+        )
+        
+        try:
+            return json.loads(response.choices[0].message.content)
+        except:
+            return current_context
+
+    def _create_social_prompt(self, 
+                            message: str, 
+                            history: List[Dict],
+                            stage: str,
+                            context_data: Dict) -> str:
+        return f"""
+        Current sales stage: {stage}
+        
+        Conversation history:
+        {self._format_conversation_history(history)}
+        
+        New message from customer:
+        {message}
+        
+        Context data:
+        {json.dumps(context_data, indent=2)}
+        
+        Analyze the following aspects:
+        1. Customer intent
+        2. Sentiment (scale -1 to 1)
+        3. Suggested response
+        4. Lead score adjustment (-1 to 1)
+        5. Suggested sales stage
+        
+        Provide analysis in JSON format.
+        """
+
+    def _format_conversation_history(self, history: List[Dict]) -> str:
+        formatted = []
+        for msg in history:
+            sender = "Customer" if msg['is_from_contact'] else "Agent"
+            formatted.append(f"{sender}: {msg['content']}")
+        return "\n".join(formatted)
+
+    def _parse_social_analysis(self, content: str) -> Dict:
+        try:
+            return json.loads(content)
+        except:
+            return {
+                "intent": {"type": "unknown"},
+                "sentiment": 0.0,
+                "suggested_response": "I apologize, but I need more context to provide a proper response.",
+                "lead_score_delta": 0.0,
+                "suggested_stage": "lead"
+            }

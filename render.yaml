@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: ai-business-agents
+    env: docker
+    plan: standard
+    buildCommand: docker build -t ai-business-agents .
+    startCommand: docker run -p $PORT:8000 ai-business-agents
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-business-agents-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ai-business-agents-redis
+          type: redis
+          property: connectionString
+      - fromGroup: ai-business-agents-env
+
+  - type: web
+    name: ai-business-agents-n8n
+    env: docker
+    plan: standard
+    image: n8nio/n8n
+    envVars:
+      - key: N8N_HOST
+        fromService:
+          name: ai-business-agents-n8n
+          type: web
+          property: host
+      - fromGroup: ai-business-agents-env
+
+  - type: redis
+    name: ai-business-agents-redis
+    ipAllowList: []
+    plan: starter
+
+databases:
+  - name: ai-business-agents-db
+    plan: starter
+
+envVarGroups:
+  - name: ai-business-agents-env
+    envVars:
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: REDIS_PASSWORD
+        generateValue: true 

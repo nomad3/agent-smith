@@ -114,3 +114,47 @@ class Alert(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     resolution_note = models.TextField(null=True, blank=True)
+
+class SocialConversation(models.Model):
+    PLATFORMS = [
+        ('whatsapp', 'WhatsApp'),
+        ('messenger', 'Facebook Messenger'),
+        ('instagram', 'Instagram Messages')
+    ]
+
+    STAGES = [
+        ('lead', 'Lead'),
+        ('qualifying', 'Qualifying'),
+        ('proposal', 'Proposal'),
+        ('negotiation', 'Negotiation'),
+        ('closed_won', 'Closed Won'),
+        ('closed_lost', 'Closed Lost')
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    platform = models.CharField(max_length=20, choices=PLATFORMS)
+    contact_id = models.CharField(max_length=100)
+    stage = models.CharField(max_length=20, choices=STAGES, default='lead')
+    first_contact = models.DateTimeField(auto_now_add=True)
+    last_interaction = models.DateTimeField(auto_now=True)
+    lead_score = models.FloatField(default=0.0)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['organization', 'platform', 'contact_id']),
+            models.Index(fields=['stage', 'lead_score'])
+        ]
+
+    context_data = models.JSONField(default=dict, help_text="Datos de contexto acumulados")
+    last_intent = models.CharField(max_length=100, null=True)
+    customer_preferences = models.JSONField(default=dict)
+    conversation_summary = models.TextField(null=True)
+    tags = models.JSONField(default=list)
+
+class SocialMessage(models.Model):
+    conversation = models.ForeignKey(SocialConversation, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_from_contact = models.BooleanField()
+    content = models.TextField()
+    intent = models.JSONField(null=True)
+    sentiment = models.FloatField(null=True)
